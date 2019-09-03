@@ -1,0 +1,66 @@
+<body>
+<button id='template-select'>select template</button>
+<input type='file' id='selectTemplate' style='display:none;'/>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.1/xlsx.min.js'></script>
+<script src='https://underscorejs.org/underscore.js'></script>
+<script>
+var jsonObj = {};
+$('#template-select').on('click',function(){
+	$('#selectTemplate').click();
+});
+
+$('#selectTemplate').on('change',function(e){
+console.log(e.target.files);
+var files = e.target.files;
+var filename = files[0].name;
+console.log(filename);
+	
+	if (typeof (FileReader) != "undefined") {
+		var reader = new FileReader();
+
+		//For Browsers other than IE.
+		if (reader.readAsBinaryString) {
+			reader.onload = function (e) {
+				var data = e.target.result;
+				var workbook = XLSX.read(data, {
+					type: 'binary'
+				  });
+				  console.log(workbook);
+				  jsonObj = XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']);
+				  // check any of the needed field empty-cells
+				  emptyCheck = _.every(jsonObj,function(obj){return obj.first_name && obj.last_name && obj.role && obj.email})
+				  
+				  console.log(XLSX.utils.sheet_to_json(workbook.Sheets['Sheet1']));
+				  
+				  var test = '123456789  ,   325434634635,   43306  34636 ,565656475475';
+				  str = test.split(/[\s,]+/).join();
+				  str = test.replace(/[\s,]+/g, ',');
+				  str = test.split(/(\s*,\s*)+/).join();				  
+			};
+			reader.readAsBinaryString(files[0]);
+		} else {
+			//For IE Browser.
+			reader.onload = function (e) {
+				var data = "";
+				var bytes = new Uint8Array(e.target.result);
+				for (var i = 0; i < bytes.byteLength; i++) {
+					data += String.fromCharCode(bytes[i]);
+				}
+				var workbook = XLSX.read(data, {
+					type: 'binary'
+				  });
+			};
+			reader.readAsArrayBuffer(files[0]);
+		}
+		
+		reader.onerror = function(ex) {
+		  console.log(ex);
+		};
+	} else {
+		alert("This browser does not support HTML5.");
+	}
+});
+</script>
+</body>
